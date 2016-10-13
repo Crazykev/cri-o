@@ -123,6 +123,7 @@ func (r *Runtime) CreateContainer(c *Container) error {
 	// We don't need childPipe on the parent side
 	childPipe.Close()
 
+	logrus.Debugf("After start runv")
 	// Wait to get container pid from conmon
 	// TODO(mrunalp): Add a timeout here
 	var si *syncInfo

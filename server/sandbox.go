@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Sirupsen/logrus"
+	//	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/pkg/stringid"
 	"github.com/kubernetes-incubator/cri-o/oci"
 	"github.com/kubernetes-incubator/cri-o/utils"
@@ -107,9 +107,11 @@ func (s *Server) RunPodSandbox(ctx context.Context, req *pb.RunPodSandboxRequest
 	defer func() {
 		if err != nil {
 			s.releasePodName(name)
-			if err2 := os.RemoveAll(podSandboxDir); err2 != nil {
-				logrus.Warnf("couldn't cleanup podSandboxDir %s: %v", podSandboxDir, err2)
-			}
+			/*
+				if err2 := os.RemoveAll(podSandboxDir); err2 != nil {
+					logrus.Warnf("couldn't cleanup podSandboxDir %s: %v", podSandboxDir, err2)
+				}
+			*/
 		}
 	}()
 
@@ -123,7 +125,7 @@ func (s *Server) RunPodSandbox(ctx context.Context, req *pb.RunPodSandboxRequest
 	podInfraRootfs := filepath.Join(s.config.Root, "graph/vfs/pause")
 	// setup defaults for the pod sandbox
 	g.SetRootPath(filepath.Join(podInfraRootfs, "rootfs"))
-	g.SetRootReadonly(true)
+	g.SetRootReadonly(false)
 	g.SetProcessArgs([]string{"/pause"})
 
 	// set hostname
@@ -267,9 +269,11 @@ func (s *Server) RunPodSandbox(ctx context.Context, req *pb.RunPodSandboxRequest
 		return nil, fmt.Errorf("failed to create network for container %s in sandbox %s: %v", containerName, id, err)
 	}
 
-	if err = s.runtime.StartContainer(container); err != nil {
-		return nil, err
-	}
+	/*
+		if err = s.runtime.StartContainer(container); err != nil {
+			return nil, err
+		}
+	*/
 
 	s.addContainer(container)
 

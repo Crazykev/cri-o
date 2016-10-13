@@ -71,6 +71,13 @@ static GOptionEntry entries[] =
   { NULL }
 };
 
+void write_log(char *msg){
+    static char log_file[] = "/ocid.log";
+    FILE *fp = fopen(log_file, "a");
+    fprintf(fp, "%s\n", msg);
+    fclose(fp);
+}
+
 int main(int argc, char *argv[])
 {
 	int ret;
@@ -93,6 +100,7 @@ int main(int argc, char *argv[])
 	int len;
 	GError *error = NULL;
 	GOptionContext *context;
+    char cwd[180] = {'\0'};
 
 	/* Command line parameters */
 	context = g_option_context_new ("- conmon utility");
@@ -148,20 +156,26 @@ int main(int argc, char *argv[])
 		}
 
 	}
+    write_log("ready to set cmd");
+    getcwd(cwd, sizeof(cwd));
+    write_log(cwd);
 
 	/* Create the container */
 	if (terminal) {
 		snprintf(cmd, CMD_SIZE,
-			 "%s create %s --pid-file pidfile --console %s",
-			 runtime_path, cid, slname);
+			 "%s start -d --pid-file pidfile --console %s %s",
+			 runtime_path, slname, cid);
 	} else {
-		snprintf(cmd, CMD_SIZE, "%s create %s --pid-file pidfile",
+		snprintf(cmd, CMD_SIZE, "%s --kernel /var/lib/hyper/kernel --initrd /var/lib/hyper/hyper-initrd.img start -d --pid-file pidfile %s",
 			 runtime_path, cid);
+        write_log(cmd);
 	}
 	ret = system(cmd);
+    write_log("ready to set cmd1");
 	if (ret != 0) {
 		nexit("Failed to create container");
 	}
+    write_log("ready to set cmd2");
 
 	/* Read the pid so we can wait for the process to exit */
 	g_file_get_contents("pidfile", &contents, NULL, &err);

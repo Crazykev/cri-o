@@ -2,20 +2,11 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 	"text/template"
 
+	"github.com/kubernetes-incubator/cri-o/cmd/cliconfig"
 	"github.com/kubernetes-incubator/cri-o/server"
-	"github.com/opencontainers/runc/libcontainer/selinux"
 	"github.com/urfave/cli"
-)
-
-const (
-	ocidRoot            = "/var/lib/ocid"
-	conmonPath          = "/usr/libexec/ocid/conmon"
-	pausePath           = "/usr/libexec/ocid/pause"
-	seccompProfilePath  = "/etc/ocid/seccomp.json"
-	apparmorProfileName = "ocid-default"
 )
 
 var commentedConfigTemplate = template.Must(template.New("config").Parse(`
@@ -81,35 +72,6 @@ pause = "{{ .Pause }}"
 // TODO: Currently ImageDir isn't really used, so we haven't added it to this
 //       template. Add it once the storage code has been merged.
 
-// DefaultConfig returns the default configuration for ocid.
-func DefaultConfig() *server.Config {
-	return &server.Config{
-		RootConfig: server.RootConfig{
-			Root:         ocidRoot,
-			SandboxDir:   filepath.Join(ocidRoot, "sandboxes"),
-			ContainerDir: filepath.Join(ocidRoot, "containers"),
-			LogDir:       "/var/log/ocid/pods",
-		},
-		APIConfig: server.APIConfig{
-			Listen: "/var/run/ocid.sock",
-		},
-		RuntimeConfig: server.RuntimeConfig{
-			Runtime: "/usr/bin/runc",
-			Conmon:  conmonPath,
-			ConmonEnv: []string{
-				"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-			},
-			SELinux:         selinux.SelinuxEnabled(),
-			SeccompProfile:  seccompProfilePath,
-			ApparmorProfile: apparmorProfileName,
-		},
-		ImageConfig: server.ImageConfig{
-			Pause:    pausePath,
-			ImageDir: filepath.Join(ocidRoot, "store"),
-		},
-	}
-}
-
 var configCommand = cli.Command{
 	Name:  "config",
 	Usage: "generate ocid configuration files",
@@ -124,7 +86,7 @@ var configCommand = cli.Command{
 		// config file. So no need to handle that here.
 		config := c.App.Metadata["config"].(*server.Config)
 		if c.Bool("default") {
-			config = DefaultConfig()
+			config = cliconfig.DefaultConfig()
 		}
 
 		// Output the commented config.

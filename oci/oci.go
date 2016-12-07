@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -14,7 +15,8 @@ import (
 	"syscall"
 	"time"
 
-	specs "github.com/opencontainers/runtime-spec/specs-go"
+	"k8s.io/kubernetes/pkg/util/term"
+	specs "src/github.com/opencontainers/runtime-spec/specs-go"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/containernetworking/cni/pkg/ns"
@@ -261,6 +263,11 @@ func (r *Runtime) ExecSync(c *Container, command []string, timeout int64) (resp 
 		Stderr:   stderrBuf.Bytes(),
 		ExitCode: 0,
 	}, nil
+}
+
+// Exec execs a command in a container with stdio, tty and resize.
+func (r *Runtime) Exec(c *Container, command []string, stdin io.Reader, stdout, stderr io.Writer, tty bool, resize chan<- term.Size) error {
+	return nil
 }
 
 // StopContainer stops a container.

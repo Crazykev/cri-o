@@ -17,8 +17,8 @@ import (
 	specs "github.com/opencontainers/runtime-spec/specs-go"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/kubernetes-incubator/cri-o/utils"
 	"github.com/containernetworking/cni/pkg/ns"
+	"github.com/kubernetes-incubator/cri-o/utils"
 	"golang.org/x/sys/unix"
 	"k8s.io/kubernetes/pkg/fields"
 	pb "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
@@ -298,7 +298,7 @@ func (r *Runtime) UpdateStatus(c *Container) error {
 	c.stateLock.Lock()
 	defer c.stateLock.Unlock()
 	out, err := exec.Command(r.path, "state", c.name).CombinedOutput()
-	if err != nil {
+	if err != nil && err.Error() != utils.ErrNoChild {
 		return fmt.Errorf("error getting container state for %s: %s: %q", c.name, err, out)
 	}
 	if err := json.NewDecoder(bytes.NewBuffer(out)).Decode(&c.state); err != nil {

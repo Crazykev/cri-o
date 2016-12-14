@@ -14,8 +14,12 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-// PRSetChildSubreaper is the value of PR_SET_CHILD_SUBREAPER in prctl(2)
-const PRSetChildSubreaper = 36
+const (
+	// PRSetChildSubreaper is the value of PR_SET_CHILD_SUBREAPER in prctl(2)
+	PRSetChildSubreaper = 36
+	// ErrNoChild is an error message when process finish before wait() get called.
+	ErrNoChild = "wait: no child process"
+)
 
 // ExecCmd executes a command with args and returns its output as a string along
 // with an error, if any
@@ -27,7 +31,7 @@ func ExecCmd(name string, args ...string) (string, error) {
 	cmd.Stderr = &stderr
 
 	err := cmd.Run()
-	if err != nil {
+	if err != nil && err.Error() != ErrNoChild {
 		return "", fmt.Errorf("`%v %v` failed: %v (%v)", name, strings.Join(args, " "), stderr.String(), err)
 	}
 
